@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
+<package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
+	<license>
+<!--
+/**
+ * Force new password (FNP)
+ *
+ * @package FNP
+ * @author emanuele
+ * @copyright 2012 emanuele, Simple Machines
+ * @license http://www.simplemachines.org/about/smf/license.php BSD
+ *
+ * @version 0.1.0
+ */
+-->
+	</license>
+	<id>Emanuele:forcenewpwd</id>
+	<name>Force new password</name>
+	<version>0.1.0</version>
+	<type>modification</type>
+
+	<install for="2.0 - 2.0.99">
+		<database>installScript.php</database>
+		<code>installHooks.php</code>
+		<require-file name="Subs-ForceNewPwd.php" destination="$sourcedir" />
+		<require-file name="ForceNewPwd.english.php" destination="$languagedir" />
+	</install>
+
+	<uninstall for="2.0 - 2.0.99">
+		<code>installHooks.php</code>
+		<remove-file name="$sourcedir/Subs-ForceNewPwd.php" />
+		<remove-file name="$languagedir/ForceNewPwd.english.php" />
+	</uninstall>
+</package-info>
