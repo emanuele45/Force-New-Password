@@ -48,14 +48,6 @@ function FNP_add_error ()
 			$context['post_errors'] = array();
 		$context['post_errors'][] = sprintf($txt['ForceNewPwd_error'], $modSettings['force_change_password']);
 	}
-
-	if (isset($_SESSION['FNP_error']))
-	{
-		loadLanguage('Errors');
-		loadLanguage('ForceNewPwd');
-		$txt['profile_error_bad_password'] = $txt['FNP_' . $_SESSION['FNP_error']];
-		unset($_SESSION['FNP_error']);
-	}
 }
 
 function FNP_getLastUpdate ()
@@ -92,7 +84,7 @@ function FNP_getLastUpdate ()
 
 function FNP_updated_pwd ($username, $posted_pass, $false)
 {
-	global $smcFunc;
+	global $smcFunc, $txt;
 
 	$request = $smcFunc['db_query']('', '
 		SELECT id_member, passwd, password_salt
@@ -104,21 +96,28 @@ function FNP_updated_pwd ($username, $posted_pass, $false)
 		)
 	);
 	$user = $smcFunc['db_fetch_assoc']($request);
-	// The old password must be correct,
+	if (empty($_POST['passwrd1']) && empty($_POST['passwrd2']))
+		return false;
+	// The old password must be correct
 	// the two passwords posted must be the same
 	// the new password must be different from the old one
+
 	if (sha1(strtolower($username) . un_htmlspecialchars($_POST['oldpasswrd'])) == $user['passwd']
 		&& $_POST['passwrd1'] == $_POST['passwrd2']
 		&& sha1(strtolower($username) . un_htmlspecialchars($_POST['passwrd1'])) != $user['passwd'])
 	{
 		updateMemberData($user['id_member'], array('last_pwd_update' => time()));
-		return true;
+		return false;
 	}
-	else
+	elseif (sha1(strtolower($username) . un_htmlspecialchars($_POST['oldpasswrd'])) == $user['passwd']
+		&& $_POST['passwrd1'] == $_POST['passwrd2']
+		&& sha1(strtolower($username) . un_htmlspecialchars($_POST['passwrd1'])) == $user['passwd'])
 	{
 		// Set the password to empty so that the change fails
+		loadLanguage('Errors');
+		loadLanguage('ForceNewPwd');
+		$txt['profile_error_bad_password'] = $txt['FNP_same_as_old'];
 		$_POST['oldpasswrd'] = '';
-		$_SESSION['FNP_error'] = 'same_as_old';
 		return false;
 	}
 }
