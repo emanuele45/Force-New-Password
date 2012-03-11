@@ -25,6 +25,7 @@
 		<code>installHooks.php</code>
 		<require-file name="Subs-ForceNewPwd.php" destination="$sourcedir" />
 		<require-file name="ForceNewPwd.english.php" destination="$languagedir" />
+		<redirect url="?action=admin;area=modsettings;sa=general" />
 	</install>
 
 	<uninstall for="2.0 - 2.0.99">

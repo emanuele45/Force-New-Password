@@ -21,8 +21,8 @@ $smcFunc['db_add_column'] (
 	'{db_prefix}members', 
 	array(
 		'name' => 'last_pwd_update',
-		'type' => 'TINYINT',
-		'default' => '0'
+		'type' => 'INT',
+		'default' => 0
 	),
 	array(),
 		'ignore'

@@ -17,7 +17,7 @@ elseif (!defined('SMF'))
 
 $hooks = array(
 	'integrate_pre_include' => '$sourcedir/Subs-ForceNewPwd.php',
-	'integrate_verify_user' => 'FNP_check_new_pwd',
+	'integrate_load_theme' => 'FNP_check_new_pwd',
 	'integrate_general_mod_settings' => 'FNP_addSettings',
 	'integrate_verify_password' => 'FNP_updated_pwd',
 	'integrate_profile_areas' => 'FNP_add_error',
