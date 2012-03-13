@@ -11,13 +11,13 @@
  * @copyright 2012 emanuele, Simple Machines
  * @license http://www.simplemachines.org/about/smf/license.php BSD
  *
- * @version 0.1.0
+ * @version 0.1.1
  */
 -->
 	</license>
 	<id>Emanuele:forcenewpwd</id>
 	<name>Force new password</name>
-	<version>0.1.0</version>
+	<version>0.1.1</version>
 	<type>modification</type>
 
 	<install for="2.0 - 2.0.99">

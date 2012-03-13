@@ -7,7 +7,7 @@
  * @copyright 2012 emanuele, Simple Machines
  * @license http://www.simplemachines.org/about/smf/license.php BSD
  *
- * @version 0.1.0
+ * @version 0.1.1
  */
 
 if (file_exists(dirname(__FILE__) . '/SSI.php') && !defined('SMF'))
@@ -18,6 +18,8 @@ elseif (!defined('SMF'))
 $hooks = array(
 	'integrate_pre_include' => '$sourcedir/Subs-ForceNewPwd.php',
 	'integrate_load_theme' => 'FNP_check_new_pwd',
+	'integrate_login' => 'FNP_check_first_login',
+	'integrate_register' => 'FNP_force_change',
 	'integrate_general_mod_settings' => 'FNP_addSettings',
 	'integrate_verify_password' => 'FNP_updated_pwd',
 	'integrate_profile_areas' => 'FNP_add_error',
