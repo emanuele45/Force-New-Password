@@ -31,8 +31,8 @@ function FNP_check_new_pwd ()
 
 	if (!empty($_SESSION['FNP_override_check']) || (!empty($lastUpdate) && $timeToChange < time()))
 	{
-		if ($lastUpdate == -1 && !isset($_SESSION['FNP_override_check']))
-			$_SESSION['FNP_override_check'] = 'FNP_new_pwd';
+		if ($lastUpdate == -1)
+			$_SESSION['FNP_override_check'] = true;
 
 		$loop = isset($_REQUEST['action']) && ($_REQUEST['action'] == 'profile' && isset($_REQUEST['area']) && $_REQUEST['area'] == 'account');
 		$loginout = isset($_REQUEST['action']) && in_array($_REQUEST['action'], array('login', 'login2', 'logout'));
@@ -41,9 +41,24 @@ function FNP_check_new_pwd ()
 	}
 }
 
-function FNP_add_error ()
+function FNP_add_error (&$profile_areas)
 {
 	global $context, $txt, $modSettings;
+
+	if (!empty($modSettings['force_change_onactivate']))
+	{
+		loadLanguage('ForceNewPwd');
+
+		$profile_areas['profile_action']['areas']['FNP_force_this_user'] = array(
+			'file' => 'Subs-ForceNewPwd.php',
+			'function' => 'FNP_force_this_user',
+			'sc' => 'get',
+			'permission' => array(
+				'own' => array(),
+				'any' => array('moderate_forum'),
+			),
+		);
+	}
 
 	if (isset($_REQUEST['fnp']))
 	{
@@ -55,8 +70,49 @@ function FNP_add_error ()
 		if (empty($_SESSION['FNP_override_check']))
 			$context['post_errors'][] = sprintf($txt['FNP_error'], $modSettings['force_change_password']);
 		else
-			$context['post_errors'][] = isset($txt[$_SESSION['FNP_override_check']]) ? $txt[$_SESSION['FNP_override_check']] : $txt['FNP_new_user'];
+			$context['post_errors'][] = $txt['FNP_new_pwd'];
 	}
+}
+
+function FNP_force_this_user()
+{
+	global $smcFunc, $context, $user_info, $txt;
+
+	isAllowedTo('moderate_forum');
+
+	loadLanguage('ForceNewPwd');
+	$smcFunc['db_query']('', '
+		UPDATE {db_prefix}members
+		SET last_pwd_update = -1
+		WHERE id_member = {int:id_member}',
+		array(
+			'id_member' => $context['id_member'],
+		)
+	);
+
+	$log_changes[] = array(
+		'action' => 'reset_user_pwd',
+		'id_log' => 2,
+		'log_time' => time(),
+		'id_member' => $context['id_member'],
+		'ip' => $user_info['ip'],
+		'extra' => serialize(array('previous' => '', 'new' => '', 'applicator' => $user_info['id'])),
+	);
+	$smcFunc['db_insert']('',
+		'{db_prefix}log_actions',
+		array(
+			'action' => 'string', 'id_log' => 'int', 'log_time' => 'int', 'id_member' => 'int', 'ip' => 'string-16',
+			'extra' => 'string-65534',
+		),
+		$log_changes,
+		array('id_action')
+	);
+
+	$context['profile_updated'] = $txt['FNP_sucessfully_forced'];
+	// We are going to start again, so let's reset the template layers.
+	$context['template_layers'] = array('html', 'body');
+	$_REQUEST['area'] = 'summary';
+	return ModifyProfile();
 }
 
 function FNP_force_change ($regOptions, $theme_vars)
@@ -85,14 +141,14 @@ function FNP_check_first_login ($member_name, $hash_password, $cookieTime)
 	if ($smcFunc['db_num_rows']($request) > 0)
 	{
 		list($last_pwd_update) = $smcFunc['db_fetch_row']($request);
-		if ($last_pwd_update == -1 && !isset($_SESSION['FNP_override_check']))
-			$_SESSION['FNP_override_check'] = 'FNP_new_user';
+		if ($last_pwd_update == -1)
+			$_SESSION['FNP_override_check'] = true;
 	}
 }
 
 function FNP_getLastUpdate ()
 {
-	global $modSettings, $user_info, $smcFunc;
+	global $modSettings, $user_info;
 
 	// Guests, get out of here
 	if (empty($user_info['id']))
